@@ -3,6 +3,12 @@
   tasks:
       - name: Ping check hosts
         ping: ~
+      - name: Update repository index
+        apt:
+            update_cache: yes
       - name: Install apache2 package
         apt:
             name: apache2
+      - name: Add PHP support for apache
+        apt:
+            name: libapache2-mod-php
