@@ -10,3 +10,4 @@
 *   Install apt module into sub server: ansible all -m apt -a update_cache=true --become --ask-become-pass // 12345678
     ansible all -m apt -a "name=vim-nox state=latest" --become --ask-become-pass
     ansible all -m apt -a "upgrade=dist" --become --ask-become-pass
+*   Install from yml: ansible-playbook --ask-become-pass install_apache.yml

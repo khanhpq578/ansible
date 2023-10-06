@@ -1,5 +1,8 @@
 - hosts: all
   become: true
   tasks:
-      - name: install apache2 package
-        apt: name=apache2
+      - name: Ping check hosts
+        ping: ~
+      - name: Install apache2 package
+        apt:
+            name: apache2
