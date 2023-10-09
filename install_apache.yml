@@ -1,16 +1,23 @@
 - hosts: all
   become: true
   tasks:
+      # Ping host
       - name: Ping check hosts
         ping: ~
+      # Update response index
       - name: Update repository index
         apt:
             update_cache: yes
+        when: ansible_distribute == "Ubuntu"
+      # Install apache2
       - name: Install apache2 package
         apt:
             name: apache2
             state: latest
+        when: ansible_distribute == "Ubuntu"
+      # install php
       - name: Add PHP support for apache
         apt:
             name: libapache2-mod-php
             state: latest
+        when: ansible_distribute == "Ubuntu"
