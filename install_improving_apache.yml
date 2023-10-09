@@ -3,7 +3,7 @@
   tasks:
       - name: install apache2 and php
         package:
-            apt:
+            name:
                 - '{{ apache_package }}'
                 - '{{ php_package}}'
             state: latest
