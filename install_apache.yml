@@ -8,16 +8,16 @@
       - name: Update repository index
         apt:
             update_cache: yes
-        when: ansible_distribute == "Ubuntu"
+        when: ansible_distribution == "Ubuntu"
       # Install apache2
       - name: Install apache2 package
         apt:
             name: apache2
             state: latest
-        when: ansible_distribute == "Ubuntu"
+        when: ansible_distribution == "Ubuntu"
       # install php
       - name: Add PHP support for apache
         apt:
             name: libapache2-mod-php
             state: latest
-        when: ansible_distribute == "Ubuntu"
+        when: ansible_distribution == "Ubuntu"
