@@ -31,3 +31,10 @@
 
 -   inventory: 18.183.117.198 apache_package=apache2 php_package=libapache2-mod-php
 -   install_improving_apache.yml
+
+# view tag
+
+-   ansible-playbook --list-tag site.yml
+-   Run with tag: ansible-playbook --tags centos --ask-become-pass site.yml
+    --"centos, db"--
+

@@ -2,12 +2,14 @@
   become: true
   tasks:
       - name: Install updates(CentOS)
+        tags: always
         dnf:
             update_only: true
             update_cache: true
         when: ansible_distribution == "CentOS"
 
       - name: Install updates(Ubuntu)
+        tags: always
         dnf:
             upgrade: dist
             update_cache: true
@@ -18,6 +20,7 @@
   tasks:
       # for Ubuntu
       - name: Install apache and php for Ubuntu servers
+        tags: apache, apache2, ubuntu
         apt:
             name:
                 - apache2
@@ -27,6 +30,7 @@
         when: ansible_distribution == "Ubuntu"
       # for CentOS
       - name: Add PHP support for apache
+        tags: apache, httpd, centos
         apt:
             name:
                 - httpd
@@ -40,6 +44,7 @@
   tasks:
       # for Ubuntu
       - name: Install mariadb for Ubuntu servers
+        tags: ubuntu, db, mariadb
         apt:
             name:
                 - mariadb-server
@@ -47,6 +52,7 @@
         when: ansible_distribution == "Ubuntu"
       # for CentOS
       - name: Install mariadb for CentOS server
+        tags: centos, db, mariadb
         apt:
             name:
                 - mariadb
