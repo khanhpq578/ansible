@@ -34,3 +34,21 @@
             state: latest
             update_cache: true
         when: ansible_distribution == "CentOS"
+
+- hosts: db_servers
+  become: true
+  tasks:
+      # for Ubuntu
+      - name: Install mariadb for Ubuntu servers
+        apt:
+            name:
+                - mariadb-server
+            state: latest
+        when: ansible_distribution == "Ubuntu"
+      # for CentOS
+      - name: Install mariadb for CentOS server
+        apt:
+            name:
+                - mariadb
+            state: latest
+        when: ansible_distribution == "CentOS"
