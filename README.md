@@ -27,4 +27,7 @@
 
 -   sudo firewall-cmd --add-port=80/tcp
 
+# install package with improving
 
+-   inventory: 18.183.117.198 apache_package=apache2 php_package=libapache2-mod-php
+-   install_improving_apache.yml
