@@ -38,3 +38,6 @@
 -   Run with tag: ansible-playbook --tags centos --ask-become-pass site.yml
     --"centos, db"--
 
+#
+
+cat /etc/httpd/conf/httpd.conf | grep ServerAdmin

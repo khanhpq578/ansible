@@ -38,6 +38,7 @@
             state: latest
             update_cache: true
         when: ansible_distribution == "CentOS"
+      # copy file
       - name: Copy default html file for site
         tags: apache, apache2, httpd
         copy:
@@ -46,6 +47,28 @@
             owner: root
             group: root
             mode: 0644
+      #
+      - name: Start httpd (CentOS)
+        tags: apache, centos, httpd
+        service:
+            name: httpd
+            state: started
+            enable: yes
+        when: ansible_distribution == "CentOS"
+      - name: Change email address for Admin
+        tags: apache, centos,httpd
+        lineinfile:
+            path: /etc/httpd/conf/httpd.conf
+            regexp: '^ServerAdmin'
+            line: ServerAdmin somebody@somewhere.net
+        when: ansible_distribution == "CentOS"
+        register: httpd 
+      - name: restart httpd (CentOS)
+        tags: apache, centos, httpd
+        service:
+            name: httpd
+            state: restarted
+        when: httpd.changed
 
 - hosts: db_servers
   become: true
@@ -66,3 +89,18 @@
                 - mariadb
             state: latest
         when: ansible_distribution == "CentOS"
+
+- host: workstations
+  become: true
+  tasks:
+      - name: Install unzip
+        package:
+            name: unzip
+      - name: Install terraform
+        unarchive:
+            src: https://
+            dest: /usr/local/bin
+            remote_src: yes
+            mode: 0755
+            owner: root
+            group: root
