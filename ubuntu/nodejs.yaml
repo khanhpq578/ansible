@@ -1,5 +1,5 @@
 ---
-- name: Setup server with Nvm, Nodejs, yarn, pm2
+- name: Setup server with Nvm, Nodejs, yarn, pm2 on Ubuntu
   hosts: all
   vars:
     nvm_init: |

@@ -1,5 +1,5 @@
 ---
-- name: Setup server with Nginx, Certbot
+- name: Setup server with Nginx, Certbot on Ubuntu
   hosts: all
   become: yes
   vars:

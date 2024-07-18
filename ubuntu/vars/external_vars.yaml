@@ -1,0 +1,23 @@
+# Server user variables
+server_user: 'vagrant'
+
+# Nodejs variables
+node_version: 'v16.14.0'
+
+# Php variables
+php_version: '8.1'
+
+# Nginx variables
+nginx_conf_sites:
+  - { src: './nginx.conf/nextjs.conf', dest: 'nextjs.conf' }
+
+# Mysql variables
+---
+root_password: your_root_password
+admin_user: your_admin_user
+admin_password: your_admin_password
+db_name: database_name
+password_validation_policy: 1
+# 0 - Low
+# 1 - Medium
+# 2 - Strong
