@@ -30,7 +30,7 @@
 
     - name: Check if root password is already set
       shell: >
-        mysql -uroot -p'{{ mysql_check_password }}' -e "SELECT 1;"
+        mysql -uroot -p'{{ mysql_root_password }}' -e "SELECT 1;"
       register: mysql_root_password_check
       ignore_errors: yes
 
