@@ -18,7 +18,7 @@
       loop:
         - mysql-server
         - mysql-client
-        # - python3-mysqldb
+        - python3-mysqldb
         - libmysqlclient-dev
       become: yes
 
