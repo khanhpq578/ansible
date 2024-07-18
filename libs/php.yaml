@@ -1,0 +1,94 @@
+---
+- name: Setup server with PHP, COMPOSER
+  hosts: all
+  become: yes
+  vars:
+    php_fpm_ini_path: /etc/php/{{ php_version }}/fpm/php.ini
+    php_fpm_www_conf_path: /etc/php/{{ php_version }}/fpm/pool.d/www.conf
+  vars_files:
+    - ./vars/external_vars.yaml
+  tasks:
+    - name: Update the package index
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install the required dependencies
+      apt:
+        name:
+          - software-properties-common
+        state: present
+
+    - name: Add the PHP repository
+      shell: add-apt-repository ppa:ondrej/php -y
+
+    - name: Update the package index again
+      apt:
+        update_cache: yes
+
+    - name: Install php-fpm
+      apt:
+        name:
+          - php{{ php_version }}-fpm
+        state: present
+        update_cache: yes
+
+    - name: Ensure php-fpm is started and enabled
+      systemd:
+        name: php{{ php_version }}-fpm
+        state: started
+        enabled: yes
+
+    - name: Install PHP extension
+      apt:
+        name:
+          - php{{ php_version }}-common
+          - php{{ php_version }}-mysql
+          - php{{ php_version }}-xml
+          - php{{ php_version }}-xmlrpc
+          - php{{ php_version }}-curl
+          - php{{ php_version }}-gd
+          - php{{ php_version }}-imagick
+          - php{{ php_version }}-cli
+          - php{{ php_version }}-dev
+          - php{{ php_version }}-imap
+          - php{{ php_version }}-mbstring
+          - php{{ php_version }}-opcache
+          - php{{ php_version }}-soap
+          - php{{ php_version }}-zip
+          - php{{ php_version }}-redis
+          - php{{ php_version }}-intl
+        state: present
+        update_cache: yes
+        install_recommends: no
+        force: yes
+
+    - name: Ensure PHP settings are configured
+      lineinfile:
+        path: '{{ php_fpm_ini_path }}'
+        regexp: '^{{ item.key }}'
+        line: '{{ item.key }} = {{ item.value }}'
+      loop:
+        - { key: 'upload_max_filesize', value: '32M' }
+        - { key: 'post_max_size', value: '48M' }
+        - { key: 'memory_limit', value: '256M' }
+        - { key: 'max_execution_time', value: '600' }
+        - { key: 'max_input_vars', value: '3000' }
+        - { key: 'max_input_time', value: '1000' }
+
+    - name: Ensure PHP-FPM pool settings are configured in www.conf
+      lineinfile:
+        path: '{{ php_fpm_www_conf_path }}'
+        regexp: '^{{ item.key }} ='
+        line: '{{ item.key }} = {{ item.value }}'
+      loop:
+        - { key: 'pm.max_children', value: '70' }
+        - { key: 'pm.start_servers', value: '20' }
+        - { key: 'pm.min_spare_servers', value: '20' }
+        - { key: 'pm.max_spare_servers', value: '35' }
+        - { key: 'pm.max_requests', value: '500' }
+
+    - name: Restart PHP-FPM service
+      service:
+        name: php{{ php_version }}-fpm
+        state: restarted

@@ -1,0 +1,87 @@
+---
+- name: Setup server with Nginx, Certbot
+  hosts: all
+  become: yes
+  vars:
+    nginx_conf_path: /etc/nginx/nginx.conf
+  vars_files:
+    - ./vars/external_vars.yaml
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    # -------------------------------------------------------- #
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Ensure Nginx is started and enabled
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Add client_max_body_size to Nginx configuration
+      lineinfile:
+        path: '{{ nginx_conf_path }}'
+        insertafter: '# Basic Settings'
+        line: '        client_max_body_size 1024M;'
+        state: present
+
+    - name: Add log format to Nginx configuration
+      blockinfile:
+        path: '{{ nginx_conf_path }}'
+        insertafter: '# Logging Settings'
+        block: |
+          log_format custom '$remote_addr - $remote_user [$time_local] '
+                           '"$request" $status $body_bytes_sent '
+                           '"$http_referer" "$http_user_agent" "$gzip_ratio"'
+                           'postdata "$request_body"';
+        state: present
+
+    - name: Ensure enable zip in Nginx configuration
+      lineinfile:
+        path: '{{ nginx_conf_path }}'
+        regexp: '# gzip_(vary|proxied|comp_level|types)'
+        line: '        {{ item }};'
+        state: present
+      loop:
+        - 'gzip_vary on'
+        - 'gzip_proxied any'
+        - 'gzip_comp_level 6'
+        - 'gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript'
+
+    # -------------------------------------------------------- #
+    - name: Copy Next.js configuration to Nginx
+      copy:
+        src: '{{ item.src }}'
+        dest: '/etc/nginx/sites-available/{{ item.dest }}'
+      loop: '{{ nginx_conf_sites }}'
+
+    - name: Create symbolic links to enable the sites
+      file:
+        src: '/etc/nginx/sites-available/{{ item.dest }}'
+        dest: '/etc/nginx/sites-enabled/{{ item.dest }}'
+        state: link
+      loop: '{{ nginx_conf_sites }}'
+
+    - name: Remove default server block
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Restart Nginx to apply the changes
+      service:
+        name: nginx
+        state: restarted
+
+    # -------------------------------------------------------- #
+    - name: Install Certbot
+      apt:
+        name:
+          - certbot
+          - python3-certbot-nginx
+        state: present

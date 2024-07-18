@@ -1,0 +1,61 @@
+---
+- name: Setup server with Nvm, Nodejs, yarn, pm2
+  hosts: all
+  vars:
+    nvm_init: |
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  vars_files:
+    - ./vars/external_vars.yaml
+  tasks:
+    - name: Install dependencies
+      become: yes
+      apt:
+        name:
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Check if NVM is already installed
+      stat:
+        path: '{{ ansible_env.HOME }}/.nvm'
+      register: nvm_dir
+
+    - name: Install NVM
+      shell: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+      environment:
+        HOME: '{{ ansible_env.HOME }}'
+      when: not nvm_dir.stat.exists
+      changed_when: true
+
+    - name: Check currently installed Node.js version
+      shell: |
+        {{ nvm_init }}
+        node --version || echo "none"
+      register: current_node_version
+      changed_when: false
+
+    - name: Install Nodejs using NVM
+      shell: |
+        {{ nvm_init }}
+        nvm install '{{ node_version }}'
+      when: current_node_version.stdout.find(node_version) == -1
+      register: nodejs_install
+
+    - name: Install YARN globally
+      shell: |
+        {{ nvm_init }}
+        npm install -g yarn
+      when: nodejs_install.changed
+
+    - name: Install PM2 globally
+      shell: |
+        {{ nvm_init }}
+        npm install -g pm2
+      when: nodejs_install.changed
+
+    - name: Install pm2-logrotate
+      shell: |
+        {{ nvm_init }}
+        pm2 install pm2-logrotate
+      when: nodejs_install.changed

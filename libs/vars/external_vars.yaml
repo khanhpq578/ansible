@@ -1,0 +1,9 @@
+# Nodejs variables
+node_version: 'v16.14.0'
+
+# Php variables
+php_version: '8.1'
+
+# Nginx variables
+nginx_conf_sites:
+  - { src: './nginx.conf/nextjs.conf', dest: 'nextjs.conf' }
