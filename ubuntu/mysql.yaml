@@ -38,23 +38,23 @@
         login_password: ''
         state: present
 
-  #   - name: Create admin user with remote access
-  #     mysql_user:
-  #       name: '{{admin_user}}'
-  #       password: '{{admin_password}}'
-  #       priv: '*.*:ALL'
-  #       host: '%'
-  #       append_privs: yes
-  #       login_user: root
-  #       login_password: '{{root_password}}'
-  #       state: present
+    - name: creating database
+      mysql_db:
+        name: '{{ mysql_db_name }}'
+        state: present
+        login_user: root
+        login_password: '{{ mysql_root_password }}'
 
-  #   - name: creating database
-  #     mysql_db:
-  #       name: '{{db_name}}'
-  #       state: present
-  #       login_user: root
-  #       login_password: '{{root_password}}'
+    - name: Create admin user with remote access
+      mysql_user:
+        name: '{{ mysql_admin_user }}'
+        password: '{{ mysql_admin_password }}'
+        priv: '{{ mysql_db_name }}.*'
+        host: 'localhost'
+        append_privs: yes
+        login_user: root
+        login_password: '{{ mysql_root_password }}'
+        state: present
 
   #   - name: Enable remote login to mysql
   #     lineinfile:
