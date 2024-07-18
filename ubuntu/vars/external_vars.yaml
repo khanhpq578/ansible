@@ -12,7 +12,6 @@ nginx_conf_sites:
   - { src: './nginx.conf/nextjs.conf', dest: 'nextjs.conf' }
 
 # Mysql variables
----
 root_password: your_root_password
 admin_user: your_admin_user
 admin_password: your_admin_password
