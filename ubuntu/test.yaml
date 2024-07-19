@@ -1,0 +1,17 @@
+---
+- name: Check if PostgreSQL root password is set
+  hosts: all
+  become: yes
+  tasks:
+    - name: Check if PostgreSQL root password is set
+      community.postgresql.postgresql_query:
+        query: "SELECT rolname, rolpassword FROM pg_authid WHERE rolname = 'postgres';"
+        db: postgres
+        login_user: postgres
+        login_host: localhost
+        login_password: '' # Leave empty to use peer authentication
+      register: query_result
+
+    - name: Show PostgreSQL root password status
+      debug:
+        msg: '{{ query_result.query_result }}'
