@@ -13,6 +13,8 @@ nginx_conf_sites:
 
 # Mysql variables
 mysql_version: '8'
+mysql_host: localhost
+mysql_port: 3306
 mysql_root_password: secret
 mysql_admin_user: admin
 mysql_admin_password: secret
@@ -24,6 +26,9 @@ mysql_password_validation_policy: 1
 
 # PostgreSQL variables
 postgresql_version: '15'
+postgresql_host: localhost
+postgresql_port: 5432
+postgresql_root_user: postgres
 postgresql_root_password: secret
 postgresql_admin_user: admin
 postgresql_admin_password: secret

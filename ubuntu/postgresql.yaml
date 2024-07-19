@@ -31,9 +31,15 @@
         url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
         dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
 
+    - name: Check if PostgreSQL APT repository is already added
+      stat:
+        path: /etc/apt/sources.list.d/pgdg.list
+      register: pgdg_repo
+
     - name: Add PostgreSQL APT repository
       shell: |
         echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+      changed_when: true
 
     - name: Update APT package list
       apt:
@@ -51,3 +57,34 @@
         name: postgresql
         state: started
         enabled: yes
+
+    - name: Create a new database
+      postgresql_db:
+        name: '{{ postgresql_db_name }}'
+        state: present
+        login_host: '{{ postgresql_host }}'
+        login_port: '{{ postgresql_port }}'
+        login_user: postgres
+        login_password: '{{ postgresql_root_password }}'
+
+    - name: Create a new admin user
+      postgresql_user:
+        name: '{{ new_admin_user }}'
+        password: '{{ admin_user_password }}'
+        role_attr_flags: CREATEDB,CREATEROLE,LOGIN
+        login_host: '{{ postgresql_host }}'
+        login_port: '{{ postgresql_port }}'
+        login_user: '{{ postgresql_user }}'
+        login_password: '{{ postgres_root_password }}'
+
+    - name: Grant all privileges on all databases to the admin user
+      postgresql_privs:
+        database: '{{ postgresql_db_name }}'
+        state: present
+        privs: ALL
+        type: database
+        role: '{{ new_admin_user }}'
+        login_host: '{{ postgresql_host }}'
+        login_port: '{{ postgresql_port }}'
+        login_user: '{{ postgresql_user }}'
+        login_password: '{{ postgres_root_password }}'
