@@ -63,23 +63,6 @@
         state: started
         enabled: yes
 
-    - name: Check if root password is already set
-      shell: >
-        psql -uroot -p'{{ postgres_root_password }}' -e "SELECT 1;"
-      register: postgres_root_password.check
-      ignore_errors: yes
-
-    - name: Set PostgreSQL password for user postgres
-      postgresql_user:
-        name: postgres
-        password: 'new_password'
-        state: present
-        login_host: '{{ postgresql_host }}'
-        login_port: '{{ postgresql_port }}'
-        login_user: '{{ postgresql_user }}'
-        login_password: ''
-      when: mysql_root_password_check.failed
-
     - name: Create a new database
       postgresql_db:
         name: '{{ postgresql_db_name }}'
