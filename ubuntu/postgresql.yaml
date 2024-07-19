@@ -1,17 +1,47 @@
 ---
-- name: Install PostgreSQL 14 on Ubuntu
+- name: Install PostgreSQL on Ubuntu
   hosts: all
   become: yes
+  vars_files:
+    - ./vars/external_vars.yaml
   tasks:
+    # - name: Add PostgreSQL APT repository
+    #   shell: |
+    #     echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+    # - name: Add PostgreSQL repository key
+    #   become: no
+    #   shell: |
+    #     wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
+    - name: Ensure curl and ca-certificates are installed
+      apt:
+        name:
+          - curl
+          - ca-certificates
+        state: present
+
+    - name: Create directory for PostgreSQL key
+      file:
+        path: /usr/share/postgresql-common/pgdg
+        state: directory
+        mode: '0755'
+
+    - name: Download PostgreSQL key
+      get_url:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+
     - name: Add PostgreSQL APT repository
       shell: |
-        echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-
-    - name: Add PostgreSQL repository key
-      become: no
-      shell: |
-        wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
+        echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
     - name: Update APT package list
       apt:
         update_cache: yes
+
+    - name: Install PostgreSQL
+      apt:
+        name: postgresql-{{postgresql_version}}
+        state: present
+        update_cache: yes
+        force_apt_get: yes

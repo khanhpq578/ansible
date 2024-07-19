@@ -12,6 +12,7 @@ nginx_conf_sites:
   - { src: './nginx.conf/nextjs.conf', dest: 'nextjs.conf' }
 
 # Mysql variables
+mysql_version: '8'
 mysql_root_password: secret
 mysql_admin_user: admin
 mysql_admin_password: secret
@@ -20,3 +21,10 @@ mysql_password_validation_policy: 1
 # 0 - Low
 # 1 - Medium
 # 2 - Strong
+
+# PostgreSQL variables
+postgresql_version: '15'
+postgresql_root_password: secret
+postgresql_admin_user: admin
+postgresql_admin_password: secret
+postgresql_db_name: test
