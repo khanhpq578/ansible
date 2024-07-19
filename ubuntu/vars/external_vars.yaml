@@ -25,6 +25,7 @@ mysql_password_validation_policy: 1
 # 2 - Strong
 
 # PostgreSQL variables
+postgresql_is_download: true
 postgresql_version: '15'
 postgresql_host: localhost
 postgresql_port: 5432

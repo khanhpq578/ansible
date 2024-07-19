@@ -1,12 +1,11 @@
 ---
-- name: Check if PostgreSQL root password is set
+- name: Change PostgreSQL Password
   hosts: all
   become: yes
   tasks:
-    - name: Change PostgreSQL user password
-      postgresql_user:
-        name: postgres
-        password: '{{ new_postgres_password }}'
-        state: present
+    - name: Change PostgreSQL password
+      shell: |
+        psql -c "ALTER USER postgres WITH PASSWORD '{{ new_postgres_password }}';"
       vars:
-        new_postgres_password: 'new_secure_password'
+        new_postgres_password: 'secret'
+      become_user: postgres
