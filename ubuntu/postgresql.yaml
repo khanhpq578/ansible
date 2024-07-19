@@ -4,27 +4,13 @@
   become: yes
   tasks:
     - name: Add PostgreSQL APT repository
-      apt_repository:
-        repo: 'deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main'
-        state: present
-        filename: 'pgdg'
+      shell: |
+        echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
-    - name: Add PostgreSQL APT repository key
-      apt_key:
-        url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc'
-        state: present
+    - name: Add PostgreSQL repository key
+      shell: |
+        wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
 
-    - name: Update apt cache
+    - name: Update APT package list
       apt:
         update_cache: yes
-
-    - name: Install PostgreSQL 14
-      apt:
-        name: postgresql-14
-        state: present
-
-    - name: Ensure PostgreSQL is running and enabled
-      systemd:
-        name: postgresql
-        state: started
-        enabled: yes
