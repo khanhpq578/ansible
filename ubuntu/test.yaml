@@ -11,6 +11,7 @@
         login_host: localhost
         login_password: '' # Leave empty to use peer authentication
       register: query_result
+      become_user: postgres
 
     - name: Show PostgreSQL root password status
       debug:
