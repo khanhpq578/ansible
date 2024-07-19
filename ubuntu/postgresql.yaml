@@ -45,6 +45,11 @@
       apt:
         update_cache: yes
 
+    - name: Install dependencies
+      apt:
+        name: psycopg2
+        state: present
+
     - name: Install PostgreSQL
       apt:
         name: postgresql-{{postgresql_version}}
