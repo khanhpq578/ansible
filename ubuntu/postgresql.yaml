@@ -1,0 +1,30 @@
+---
+- name: Install PostgreSQL 14 on Ubuntu
+  hosts: all
+  become: yes
+  tasks:
+    - name: Add PostgreSQL APT repository
+      apt_repository:
+        repo: 'deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main'
+        state: present
+        filename: 'pgdg'
+
+    - name: Add PostgreSQL APT repository key
+      apt_key:
+        url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc'
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install PostgreSQL 14
+      apt:
+        name: postgresql-14
+        state: present
+
+    - name: Ensure PostgreSQL is running and enabled
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
