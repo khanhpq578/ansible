@@ -69,18 +69,18 @@
         state: present
         login_host: '{{ postgresql_host }}'
         login_port: '{{ postgresql_port }}'
-        login_user: '{{ postgresql_user }}'
+        login_user: '{{ postgresql_root_user }}'
         login_password: '{{ postgresql_root_password }}'
 
     - name: Create a new admin user
       postgresql_user:
-        name: '{{ new_admin_user }}'
-        password: '{{ admin_user_password }}'
+        name: '{{ postgresql_admin_user }}'
+        password: '{{ postgresql_admin_password }}'
         role_attr_flags: CREATEDB,CREATEROLE,LOGIN
         login_host: '{{ postgresql_host }}'
         login_port: '{{ postgresql_port }}'
-        login_user: '{{ postgresql_user }}'
-        login_password: '{{ postgres_root_password }}'
+        login_user: '{{ postgresql_root_user }}'
+        login_password: '{{ postgresql_root_password }}'
 
     - name: Grant all privileges on all databases to the admin user
       postgresql_privs:
@@ -88,8 +88,8 @@
         state: present
         privs: ALL
         type: database
-        role: '{{ new_admin_user }}'
+        role: '{{ postgresql_admin_user }}'
         login_host: '{{ postgresql_host }}'
         login_port: '{{ postgresql_port }}'
-        login_user: '{{ postgresql_user }}'
-        login_password: '{{ postgres_root_password }}'
+        login_user: '{{ postgresql_root_user }}'
+        login_password: '{{ postgresql_root_password }}'
