@@ -6,6 +6,7 @@ node_version: 'v16.14.0'
 
 # Php variables
 php_version: '8.1'
+php_root_folder: ''
 
 # Nginx variables
 nginx_conf_sites:
@@ -34,3 +35,6 @@ postgresql_root_password: secret
 postgresql_admin_user: admin
 postgresql_admin_password: secret
 postgresql_db_name: test
+
+# swap
+swap_ram_value: '8'

@@ -57,7 +57,7 @@
         update_cache: yes
         force_apt_get: yes
 
-    - name: Ensure Nginx is started and enabled
+    - name: Ensure PostgreSQL is started and enabled
       systemd:
         name: postgresql
         state: started

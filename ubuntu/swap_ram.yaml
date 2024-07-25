@@ -1,0 +1,46 @@
+---
+- name: Configure Swap on Ubuntu
+  hosts: all
+  become: yes
+  vars_files:
+    - ./vars/external_vars.yaml
+
+  tasks:
+    - name: Check if swap is already enabled
+      command: swapon --show
+      register: swap_status
+      changed_when: false
+
+    - name: Create a swap file
+      command: fallocate -l {{ swap_ram_value }}G /swapfile
+      when: swap_status.stdout == ''
+      notify:
+        - Change swap file permissions
+
+    - name: Change swap file permissions
+      command: chmod 600 /swapfile
+      when: swap_status.stdout == ''
+
+    - name: Setup swap space
+      command: mkswap /swapfile
+      when: swap_status.stdout == ''
+      notify:
+        - Enable swap file
+
+    - name: Enable swap file
+      command: swapon /swapfile
+      when: swap_status.stdout == ''
+
+    - name: Ensure swap is enabled on boot
+      lineinfile:
+        path: /etc/fstab
+        line: '/swapfile none swap sw 0 0'
+        state: present
+      when: swap_status.stdout == ''
+
+  handlers:
+    - name: Change swap file permissions
+      command: chmod 600 /swapfile
+
+    - name: Enable swap file
+      command: swapon /swapfile
