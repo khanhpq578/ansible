@@ -1,0 +1,69 @@
+---
+- name: Deploy Chatwoot using Docker Compose
+  hosts: all
+  become: yes
+  vars:
+    chatwoot_dir: '/home/chatwoot'
+    chatwoot_env_url: 'https://raw.githubusercontent.com/chatwoot/chatwoot/develop/.env.example'
+    chatwoot_docker_compose_url: 'https://raw.githubusercontent.com/chatwoot/chatwoot/develop/docker-compose.production.yaml'
+  vars_files:
+    - ./vars/external_vars.yaml
+
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install Docker
+      shell: |
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sudo sh get-docker.sh
+        sudo apt-get install docker-compose-plugin -y
+      args:
+        warn: false
+
+    - name: Create Chatwoot directory
+      file:
+        path: '{{ chatwoot_dir }}'
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Download .env template
+      get_url:
+        url: '{{ chatwoot_env_url }}'
+        dest: '{{ chatwoot_dir }}/.env'
+        mode: '0644'
+
+    - name: Download Docker Compose template
+      get_url:
+        url: '{{ chatwoot_docker_compose_url }}'
+        dest: '{{ chatwoot_dir }}/docker-compose.yaml'
+        mode: '0644'
+
+    - name: Update .env file
+      lineinfile:
+        path: '{{ chatwoot_dir }}/.env'
+        regexp: '^(REDIS_PASSWORD=|POSTGRES_PASSWORD=)'
+        line: '{{ item }}'
+      loop:
+        - 'REDIS_PASSWORD='
+        - 'POSTGRES_PASSWORD={{ postgresql_root_password }}'
+
+    - name: Update docker-compose.yaml file for PostgreSQL password
+      replace:
+        path: '{{ chatwoot_dir }}/docker-compose.yaml'
+        regexp: 'POSTGRES_PASSWORD=.*'
+        replace: 'POSTGRES_PASSWORD={{postgresql_root_password }}'
+
+    - name: Prepare the database by running migrations
+      command: docker compose run --rm rails bundle exec rails db:chatwoot_prepare
+      args:
+        chdir: '{{ chatwoot_dir }}'
+
+    - name: Start Chatwoot using Docker Compose
+      command: docker compose up -d
+      args:
+        chdir: '{{ chatwoot_dir }}'
