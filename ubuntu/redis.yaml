@@ -1,0 +1,29 @@
+---
+- name: Install Redis on Ubuntu
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update APT package index
+      apt:
+        update_cache: yes
+
+    - name: Install Redis server
+      apt:
+        name: redis-server
+        state: present
+
+    - name: Ensure Redis is enabled and started
+      systemd:
+        name: redis-server
+        enabled: yes
+        state: started
+
+    - name: Verify Redis installation
+      command: redis-cli ping
+      register: redis_ping
+      changed_when: false
+
+    - name: Display Redis ping result
+      debug:
+        msg: 'Redis ping response: {{ redis_ping.stdout }}'
