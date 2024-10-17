@@ -78,17 +78,17 @@
         - { key: 'max_input_vars', value: '3000' }
         - { key: 'max_input_time', value: '1000' }
 
-    - name: Ensure PHP-FPM pool settings are configured in www.conf
-      lineinfile:
-        path: '{{ php_fpm_www_conf_path }}'
-        regexp: '^{{ item.key }} ='
-        line: '{{ item.key }} = {{ item.value }}'
-      loop:
-        - { key: 'pm.max_children', value: '70' }
-        - { key: 'pm.start_servers', value: '20' }
-        - { key: 'pm.min_spare_servers', value: '20' }
-        - { key: 'pm.max_spare_servers', value: '35' }
-        - { key: 'pm.max_requests', value: '500' }
+    # - name: Ensure PHP-FPM pool settings are configured in www.conf
+    #   lineinfile:
+    #     path: '{{ php_fpm_www_conf_path }}'
+    #     regexp: '^{{ item.key }} ='
+    #     line: '{{ item.key }} = {{ item.value }}'
+    #   loop:
+    #     - { key: 'pm.max_children', value: '70' }
+    #     - { key: 'pm.start_servers', value: '20' }
+    #     - { key: 'pm.min_spare_servers', value: '20' }
+    #     - { key: 'pm.max_spare_servers', value: '35' }
+    #     - { key: 'pm.max_requests', value: '500' }
 
     - name: Restart PHP-FPM service
       service:

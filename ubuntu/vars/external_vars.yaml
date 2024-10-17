@@ -10,7 +10,7 @@ php_root_folder: ''
 
 # Nginx variables
 nginx_conf_sites:
-  - { src: './nginx.conf/nextjs.conf', dest: 'nextjs.conf' }
+  - { src: './sites.conf/nextjs.conf', dest: 'nextjs.conf' }
 
 # Mysql variables
 mysql_version: '8'
