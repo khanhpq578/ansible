@@ -5,7 +5,7 @@
   vars:
     nginx_conf_path: /etc/nginx/nginx.conf
   vars_files:
-    - ./vars/external_vars.yaml
+    - ../external_vars.yaml
   tasks:
     - name: Update and upgrade apt packages
       apt:

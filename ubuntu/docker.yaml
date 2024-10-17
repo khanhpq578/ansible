@@ -3,7 +3,7 @@
   hosts: all
   become: yes
   vars_files:
-    - ./vars/external_vars.yaml
+    - ../external_vars.yaml
   tasks:
     - name: Update apt and install dependencies
       apt:
@@ -43,5 +43,3 @@
     - name: Executing the Docker Command Without Sudo
       shell: |
         usermod -aG docker {{ server_user }}
-
-

@@ -1,0 +1,42 @@
+---
+- name: Deploy Laravel Application
+  hosts: laravel_servers
+  become: true
+  vars_files:
+    - ../external_vars.yaml
+
+  tasks:
+    - name: Clone the Laravel project repository
+      git:
+        repo: '{{ laravel_git_repo }}'
+        dest: '{{ laravel_project_path }}'
+        update: yes
+
+    - name: Install Laravel dependencies with Composer
+      command: composer install
+      args:
+        chdir: '{{ laravel_project_path }}'
+
+    - name: Copy environment file
+      copy:
+        src: '{{ project_path }}/{{ env_file }}'
+        dest: '{{ project_path }}/{{ env_destination }}'
+        remote_src: yes
+
+    - name: Generate application key
+      command: php artisan key:generate
+      args:
+        chdir: '{{ project_path }}'
+
+    - name: Set correct permissions for storage and bootstrap/cache
+      file:
+        path: '{{ item }}'
+        state: directory
+        mode: '0775'
+        recurse: yes
+      loop:
+        - '{{ project_path }}/storage'
+        - '{{ project_path }}/bootstrap/cache'
+
+    - name: Ensure www-data is the owner of project files
+      command: chown -R www-data:www-data "{{ project_path }}"

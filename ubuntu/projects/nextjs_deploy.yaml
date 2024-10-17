@@ -1,0 +1,42 @@
+---
+- name: Deploy Next.js Application
+  hosts: nextjs_servers
+  become: true
+  vars_files:
+    - ../external_vars.yaml
+
+  tasks:
+    - name: Clone the Next.js project repository
+      git:
+        repo: '{{ nextjs_git_repo }}'
+        dest: '{{ nextjs_project_path }}'
+        update: yes
+
+    - name: Install project dependencies with npm
+      command: yarn
+      args:
+        chdir: '{{ nextjs_project_path }}'
+
+    - name: Copy environment file
+      copy:
+        src: '{{ project_path }}/{{ env_file }}'
+        dest: '{{ project_path }}/{{ env_destination }}'
+        remote_src: yes
+
+    - name: Build the Next.js application
+      command: yarn build
+      args:
+        chdir: '{{ nextjs_project_path }}'
+
+    - name: Start the Next.js application with PM2
+      command: pm2 start yarn --name '{{ nextjs_pm2_name}}' -- start --port '{{ nextjs_pm2_port}}'
+      args:
+        chdir: '{{ nextjs_project_path }}'
+
+    - name: Ensure PM2 starts on boot
+      command: pm2 startup
+      register: pm2_startup
+      changed_when: pm2_startup.rc == 0
+
+    - name: Save the PM2 process list
+      command: pm2 save

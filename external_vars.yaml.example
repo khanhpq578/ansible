@@ -1,0 +1,40 @@
+# Server user variables
+server_user: 'vagrant'
+
+# Nodejs variables
+node_version: 'v16.14.0'
+
+# Php variables
+php_version: '8.1'
+php_root_folder: ''
+
+# Nginx variables
+nginx_conf_sites:
+  - { src: './sites.conf/nextjs.conf', dest: 'nextjs.conf' }
+
+# Mysql variables
+mysql_version: '8'
+mysql_host: localhost
+mysql_port: 3306
+mysql_root_password: secret
+mysql_admin_user: admin
+mysql_admin_password: secret
+mysql_db_name: test
+mysql_password_validation_policy: 1
+# 0 - Low
+# 1 - Medium
+# 2 - Strong
+
+# PostgreSQL variables
+postgresql_is_download: true
+postgresql_version: '15'
+postgresql_host: localhost
+postgresql_port: 5432
+postgresql_root_user: postgres
+postgresql_root_password: secret
+postgresql_admin_user: admin
+postgresql_admin_password: secret
+postgresql_db_name: test
+
+# swap
+swap_ram_value: '8'

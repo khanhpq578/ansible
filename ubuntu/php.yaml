@@ -6,7 +6,7 @@
     php_fpm_ini_path: /etc/php/{{ php_version }}/fpm/php.ini
     php_fpm_www_conf_path: /etc/php/{{ php_version }}/fpm/pool.d/www.conf
   vars_files:
-    - ./vars/external_vars.yaml
+    - ../external_vars.yaml
   tasks:
     - name: Update the package index
       apt:

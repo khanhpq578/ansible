@@ -3,7 +3,7 @@
   hosts: all
   become: yes
   vars_files:
-    - ./vars/external_vars.yaml
+    - ../external_vars.yaml
 
   tasks:
     - name: Check if swap is already enabled
