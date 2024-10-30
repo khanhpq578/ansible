@@ -38,3 +38,25 @@ postgresql_db_name: test
 
 # swap
 swap_ram_value: '8'
+
+
+# projects
+laravel_git_repo: ''
+laravel_project_path: '/var/www/project'
+laravel_env_file: '.env.staging.example'
+laravel_env_destination: '.env'
+
+nextjs_git_repo: ''
+nextjs_project_path: ''
+nextjs_env_file: '.env.example'
+nextjs_env_destination: '.env'
+nextjs_pm2_name: 'nextjs-app'
+nextjs_pm2_port: 3000
+
+reactjs_git_repo: ''
+reactjs_project_path: '/var/www/project'
+reactjs_build_dir: 'dist'
+reactjs_env_file: '.env.staging.example'
+reactjs_env_destination: '.env'
+reactjs_pm2_name: 'admin'
+reactjs_pm2_port: 3000

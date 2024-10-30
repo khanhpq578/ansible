@@ -1,6 +1,7 @@
 ---
 - name: Setup server with Nvm, Nodejs, yarn, pm2 on Ubuntu
   hosts: all
+  become: no
   vars:
     nvm_init: |
       export NVM_DIR="$HOME/.nvm"
