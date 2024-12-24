@@ -6,19 +6,6 @@
     - ../external_vars.yaml
 
   tasks:
-    - name: Update and upgrade apt packages
-      apt:
-        update_cache: yes
-        upgrade: dist
-
-    - name: Install Docker
-      shell: |
-        curl -fsSL https://get.docker.com -o get-docker.sh
-        sudo sh get-docker.sh
-        sudo apt-get install docker-compose-plugin -y
-      args:
-        warn: false
-
     - name: Create Chatwoot directory
       file:
         path: '{{ chatwoot_dir }}'
@@ -37,11 +24,12 @@
     - name: Update .env file
       lineinfile:
         path: '{{ chatwoot_dir }}/.env'
-        regexp: '^(REDIS_PASSWORD=|POSTGRES_PASSWORD=)'
+        regexp: '^(REDIS_PASSWORD=|# POSTGRES_DATABASE=|FRONTEND_URL=http://0.0.0.0:3000)'
         line: '{{ item }}'
       loop:
         - 'REDIS_PASSWORD='
         - 'POSTGRES_PASSWORD={{ chatwoot_db_password }}'
+        - 'FRONTEND_URL={{chatwoot_url}}'
 
     - name: Update docker-compose.yaml file for PostgreSQL password
       replace:
