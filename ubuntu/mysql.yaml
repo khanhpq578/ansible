@@ -28,12 +28,6 @@
         state: started
         enabled: yes
 
-    - name: Check if root password is already set
-      shell: >
-        mysql -uroot -p'{{ mysql_root_password }}' -e "SELECT 1;"
-      register: mysql_root_password_check
-      ignore_errors: yes
-
     - name: Set root user password
       mysql_user:
         name: root
@@ -45,7 +39,6 @@
         login_user: root
         login_password: ''
         state: present
-      when: mysql_root_password_check.failed
 
     - name: creating database
       mysql_db:
