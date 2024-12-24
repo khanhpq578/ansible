@@ -1,0 +1,57 @@
+---
+- name: Deploy WordPress Application
+  hosts: all
+  become: no
+  vars_files:
+    - ../../external_vars.yaml
+
+  tasks:
+    - name: Run ssh-keyscan to add GitLab to known_hosts
+      shell: ssh-keyscan gitlab.lisod.vn >> ~/.ssh/known_hosts
+      args:
+        creates: ~/.ssh/known_hosts
+
+    - name: Check if local WordPress directory exists
+      stat:
+        path: '{{ wordpress_project_local_path }}'
+      register: local_wp_exists
+
+    - name: Exit playbook if local WordPress already exists
+      meta: end_play
+      when: local_wp_exists.stat.exists
+
+    - name: Clone WordPress repository
+      git:
+        repo: '{{ wordpress_git_repo }}'
+        dest: '{{ wordpress_project_local_path }}'
+        update: true
+
+    - name: Copy WordPress from local directory
+      command: cp -ra {{ wordpress_project_local_path }} {{ wordpress_project_path }}
+      become: yes
+
+    - name: Copy wp-config-sample.php to wp-config.php
+      copy:
+        src: '{{ wordpress_project_path }}/wp-config-sample.php'
+        dest: '{{ wordpress_project_path }}/wp-config.php'
+        remote_src: yes
+
+    - name: Configure wp-config.php
+      lineinfile:
+        path: '{{ wordpress_project_path }}/wp-config.php'
+        regexp: "define\\( '{{ item.key }}', '.*' \\);"
+        line: "define( '{{ item.key }}', '{{ item.value }}' );"
+      with_items:
+        - { key: 'DB_NAME', value: '{{ wordpress_db_name }}' }
+        - { key: 'DB_USER', value: '{{ wordpress_db_username }}' }
+        - { key: 'DB_PASSWORD', value: '{{ wordpress_db_password }}' }
+        - { key: 'DB_HOST', value: '{{ wordpress_db_host }}' }
+
+    - name: Set permissions for WordPress files
+      file:
+        path: '{{ wordpress_project_path }}/wp-content'
+        owner: www-data
+        group: www-data
+        mode: '0775'
+        recurse: yes
+      become: yes

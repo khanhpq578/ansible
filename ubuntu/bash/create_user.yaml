@@ -1,0 +1,60 @@
+---
+- name: Tạo người dùng với quyền sudo và cấu hình SSH
+  hosts: servers
+  become: yes
+  vars:
+    - ../../external_vars.yaml
+
+  tasks:
+    - name: Kiểm tra nếu người dùng đã tồn tại
+      command: id {{ ssh_username }}
+      register: user_exists
+      ignore_errors: true
+
+    - name: Tạo người dùng nếu chưa tồn tại
+      user:
+        name: '{{ ssh_username }}'
+        password: "{{ ssh_password | password_hash('sha512') }}"
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+      when: user_exists.rc != 0
+
+    - name: Tạo thư mục SSH cho người dùng
+      file:
+        path: '/home/{{ ssh_username }}/.ssh'
+        state: directory
+        owner: '{{ ssh_username }}'
+        group: '{{ ssh_username }}'
+        mode: '0600'
+
+    - name: Đặt khóa công khai SSH
+      copy:
+        dest: '/home/{{ ssh_username }}/.ssh/authorized_keys'
+        content: '{{ public_key }}'
+        owner: '{{ ssh_username }}'
+        group: '{{ ssh_username }}'
+        mode: '0600'
+
+    - name: Cấu hình sudo không cần mật khẩu
+      lineinfile:
+        path: /etc/sudoers
+        line: '{{ ssh_username }} ALL=(ALL) NOPASSWD:ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Sao lưu cấu hình SSH
+      copy:
+        src: /etc/ssh/sshd_config
+        dest: /etc/ssh/sshd_config.backup
+        remote_src: yes
+
+    - name: Thay đổi cổng SSH thành 2212
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?Port '
+        line: 'Port {{ ssh_port }}'
+
+    - name: Khởi động lại dịch vụ SSH
+      service:
+        name: sshd
+        state: restarted

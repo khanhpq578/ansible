@@ -19,10 +19,6 @@
 
 ---
 
-ssh-copy-id -i /Users/lisod/projects/libs/ansible/ssh/ansible.pub -f -o "IdentityFile ~/.ssh/kyujin-kinkinramen.cer" ubuntu@18.143.67.62
+ssh-copy-id -i /Users/lisod/projects/libs/ansible/ssh/ansible.pub -f -o "IdentityFile ~/.ssh/" ubuntu@
 
-
-
-
-
-helm install --namespace gitlab-runner --create-namespace --set runnerRegistrationToken=cXA1yZzo4Qfk-yaTRQWb  gitlab-runner gitlab/gitlab-runner --version v0.63.0  --values values.yaml
+helm install --namespace gitlab-runner --create-namespace --set runnerRegistrationToken=cXA1yZzo4Qfk-yaTRQWb gitlab-runner gitlab/gitlab-runner --version v0.63.0 --values values.yaml

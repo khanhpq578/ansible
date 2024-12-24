@@ -1,0 +1,73 @@
+---
+- name: Deploy Nodejs Application
+  hosts: all
+  become: no
+  vars_files:
+    - ../../external_vars.yaml
+
+  tasks:
+    # - name: Run ssh-keyscan to add GitLab to known_hosts
+    #   shell: ssh-keyscan gitlab.lisod.vn >> ~/.ssh/known_hosts
+    #   args:
+    #     creates: ~/.ssh/known_hosts
+
+    # - name: Check if local Nodejs directory exists
+    #   stat:
+    #     path: '{{ nodejs_project_local_path }}'
+    #   register: local_nodejs_exists
+
+    # - name: Exit playbook if local Nodejs already exists
+    #   meta: end_play
+    #   when: local_nodejs_exists.stat.exists
+
+    # - name: Clone the Nodejs project repository
+    #   git:
+    #     repo: '{{ nodejs_git_repo }}'
+    #     dest: '{{ nodejs_project_local_path }}'
+    #     update: yes
+
+    # - name: Copy Nodejs from local directory
+    #   command: cp -ra {{ nodejs_project_local_path }} {{ nodejs_project_path }}
+    #   become: yes
+
+    # - name: Install project dependencies with npm
+    #   shell: |
+    #     bash -i -c 'yarn'
+    #   args:
+    #     chdir: '{{ nodejs_project_path }}'
+
+    # - name: Copy environment file
+    #   copy:
+    #     src: '{{ nodejs_project_path }}/{{ nodejs_env_file }}'
+    #     dest: '{{ nodejs_project_path }}/{{ nodejs_env_destination }}'
+    #     remote_src: yes
+
+    - name: Build the Nodejs application
+      shell: |
+        bash -i -c 'npx nx build api'
+      args:
+        chdir: '{{ nodejs_project_path }}'
+
+    # Run pm2
+    - name: Ensure pm2-configs directory exists
+      file:
+        path: /home/{{ server_user }}/pm2-configs
+        state: directory
+
+    - name: Copy pm2-node.json to the server
+      copy:
+        src: ../configs/pm2/pm2-node.json
+        dest: /home/{{ server_user }}/pm2-configs/pm2-node.json
+
+    - name: Start node.js app with PM2
+      shell: |
+        bash -i -c 'pm2 start /home/{{ server_user }}/pm2-configs/pm2-node.json'
+
+    - name: Save the PM2 process list
+      shell: |
+        bash -i -c ' env PATH=$PATH:/home/{{server_user}}/.nvm/versions/node/{{node_version}}/bin /home/{{server_user}}/.nvm/versions/node/{{node_version}}/lib/node_modules/pm2/bin/pm2 startup systemd -u {{server_user}} --hp /home/{{server_user}}'
+      become: true
+
+    - name: Save the PM2 process list
+      shell: |
+        bash -i -c 'pm2 save'

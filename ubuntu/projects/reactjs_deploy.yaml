@@ -1,42 +1,75 @@
 ---
 - name: Deploy React.js Application
-  hosts: reactjs_servers
-  become: true
+  hosts: all
+  become: no
   vars_files:
-    - ../external_vars.yaml
+    - ../../external_vars.yaml
 
   tasks:
-    - name: Clone the Next.js project repository
+    - name: Run ssh-keyscan to add GitLab to known_hosts
+      shell: ssh-keyscan gitlab.lisod.vn >> ~/.ssh/known_hosts
+      args:
+        creates: ~/.ssh/known_hosts
+
+    - name: Check if local React.js directory exists
+      stat:
+        path: '{{ reactjs_project_local_path }}'
+      register: local_reactjs_exists
+
+    - name: Exit playbook if local React.js already exists
+      meta: end_play
+      when: local_reactjs_exists.stat.exists
+
+    - name: Clone the React.js project repository
       git:
         repo: '{{ reactjs_git_repo }}'
-        dest: '{{ reactjs_project_path }}'
+        dest: '{{ reactjs_project_local_path }}'
         update: yes
 
-    - name: Install project dependencies with npm
-      command: yarn
+    - name: Copy React.js from local directory
+      command: cp -ra {{ reactjs_project_local_path }} {{ reactjs_project_path }}
+      become: yes
+
+    - name: Ensure NVM is loaded and install yarn
+      shell: |
+        bash -i -c 'yarn'
       args:
         chdir: '{{ reactjs_project_path }}'
+      environment:
+        HOME: /home/{{server_user}}
 
     - name: Copy environment file
       copy:
-        src: '{{ project_path }}/{{ env_file }}'
-        dest: '{{ project_path }}/{{ env_destination }}'
+        src: '{{ reactjs_project_path }}/{{ reactjs_env_file }}'
+        dest: '{{ reactjs_project_path }}/{{ reactjs_env_destination }}'
         remote_src: yes
 
-    - name: Build the Next.js application
-      command: yarn build
+    - name: Build the React.js application
+      shell: |
+        bash -i -c 'yarn build'
       args:
         chdir: '{{ reactjs_project_path }}'
 
-    - name: Start the Next.js application with PM2
-      command: pm2 server --spa '{{ reactjs_build_dir }}' '{{ reactjs_pm2_port}}' --name '{{ reactjs_pm2_name}}'
-      args:
-        chdir: '{{ reactjs_project_path }}'
+    # Run pm2
+    - name: Ensure pm2-configs directory exists
+      file:
+        path: /home/{{ server_user }}/pm2-configs
+        state: directory
 
-    - name: Ensure PM2 starts on boot
-      command: pm2 startup
-      register: pm2_startup
-      changed_when: pm2_startup.rc == 0
+    - name: Copy pm2-react.json to the server
+      copy:
+        src: ../configs/pm2/pm2-react.json
+        dest: /home/{{ server_user }}/pm2-configs/pm2-react.json
+
+    - name: Start react.js app with PM2
+      shell: |
+        bash -i -c 'pm2 start /home/{{ server_user }}/pm2-configs/pm2-react.json'
 
     - name: Save the PM2 process list
-      command: pm2 save
+      shell: |
+        bash -i -c ' env PATH=$PATH:/home/{{server_user}}/.nvm/versions/node/{{node_version}}/bin /home/{{server_user}}/.nvm/versions/node/{{node_version}}/lib/node_modules/pm2/bin/pm2 startup systemd -u {{server_user}} --hp /home/{{server_user}}'
+      become: true
+
+    - name: Save the PM2 process list
+      shell: |
+        bash -i -c 'pm2 save'

@@ -2,7 +2,7 @@
 server_user: 'vagrant'
 
 # Nodejs variables
-node_version: 'v16.14.0'
+node_version: 'v18.20.4'
 
 # Php variables
 php_version: '8.1'
@@ -10,7 +10,11 @@ php_root_folder: ''
 
 # Nginx variables
 nginx_conf_sites:
-  - { src: './sites.conf/nextjs.conf', dest: 'nextjs.conf' }
+  - { src: './configs/nginx/nextjs.conf', dest: 'nextjs.conf' }
+  - { src: './configs/nginx/reactjs.conf', dest: 'reactjs.conf' }
+  - { src: './configs/nginx/php.conf', dest: 'laravel.conf' }
+  - { src: './configs/nginx/wordpress.conf', dest: 'wordpress.conf' }
+  - { src: './configs/nginx/nodejs.conf', dest: 'nodejs.conf' }
 
 # Mysql variables
 mysql_version: '8'
@@ -39,24 +43,61 @@ postgresql_db_name: test
 # swap
 swap_ram_value: '8'
 
-
 # projects
 laravel_git_repo: ''
-laravel_project_path: '/var/www/project'
+laravel_project_name: 'laravel'
+laravel_project_local_path: '/home/{{server_user}}/{{laravel_project_name}}'
+laravel_project_path: '/var/www/{{laravel_project_name}}'
 laravel_env_file: '.env.staging.example'
 laravel_env_destination: '.env'
 
 nextjs_git_repo: ''
-nextjs_project_path: ''
-nextjs_env_file: '.env.example'
+nextjs_project_name: 'nextjs'
+nextjs_project_local_path: '/home/{{server_user}}/{{nextjs_project_name}}'
+nextjs_project_path: '/var/www/{{nextjs_project_name}}'
+nextjs_env_file: '.env.staging.example'
 nextjs_env_destination: '.env'
-nextjs_pm2_name: 'nextjs-app'
-nextjs_pm2_port: 3000
 
 reactjs_git_repo: ''
-reactjs_project_path: '/var/www/project'
+reactjs_project_name: 'reactjs'
+reactjs_project_local_path: '/home/{{server_user}}/{{reactjs_project_name}}'
+reactjs_project_path: '/var/www/{{reactjs_project_name}}'
 reactjs_build_dir: 'dist'
 reactjs_env_file: '.env.staging.example'
 reactjs_env_destination: '.env'
-reactjs_pm2_name: 'admin'
-reactjs_pm2_port: 3000
+
+nodejs_git_repo: ''
+nodejs_project_name: 'nodejs'
+nodejs_project_local_path: '/home/{{server_user}}/{{nodejs_project_name}}'
+nodejs_project_path: '/var/www/{{nodejs_project_name}}'
+nodejs_build_dir: 'dist'
+nodejs_env_file: '.env.staging.example'
+nodejs_env_destination: '.env'
+
+wordpress_git_repo: ''
+wordpress_project_name: 'wordpress'
+wordpress_project_local_path: '/home/{{server_user}}/{{ wordpress_project_name }}'
+wordpress_project_path: '/var/www/{{wordpress_project_name}}'
+wordpress_config_file: 'wp-config-sample.php'
+wordpress_config_destination: 'wp-config.php'
+wordpress_db_name: db
+wordpress_db_host: localhost
+wordpress_db_username: admin
+wordpress_db_password: secret
+
+chatwoot_project_name: chatwoot
+chatwoot_db_password: secret
+chatwoot_dir: '/home/{{server_user}}/{{chatwoot_project_name}}'
+chatwoot_env_url: 'https://raw.githubusercontent.com/chatwoot/chatwoot/develop/.env.example'
+chatwoot_docker_compose_url: 'https://raw.githubusercontent.com/chatwoot/chatwoot/develop/docker-compose.production.yaml'
+
+# ssh user
+ssh_username: khanhpq
+ssh_password: secret
+ssh_public_key: 
+ssh_port: 2212
+
+# Supervisor variables
+supervisor_conf:
+  - { src: './configs/supervisor/queue.conf', dest: '/etc/supervisor/conf.d/queue.conf' }
+supervisor_path: '/etc/supervisor'

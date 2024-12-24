@@ -1,3 +1,6 @@
-/servers
+servers/
 external_vars.yaml
-/logs/*
+logs/
+ansible
+ansible.pub
+inventory.ini

@@ -1,16 +1,34 @@
 ---
 - name: Deploy Laravel Application
   hosts: laravel_servers
-  become: true
+  become: no
   vars_files:
-    - ../external_vars.yaml
+    - ../../external_vars.yaml
 
   tasks:
+    - name: Run ssh-keyscan to add GitLab to known_hosts
+      shell: ssh-keyscan gitlab.lisod.vn >> ~/.ssh/known_hosts
+      args:
+        creates: ~/.ssh/known_hosts
+
+    - name: Check if local Laravel directory exists
+      stat:
+        path: '{{ laravel_project_local_path }}'
+      register: local_laravel_exists
+
+    - name: Exit playbook if local Laravel already exists
+      meta: end_play
+      when: local_laravel_exists.stat.exists
+
     - name: Clone the Laravel project repository
       git:
         repo: '{{ laravel_git_repo }}'
-        dest: '{{ laravel_project_path }}'
+        dest: '{{ laravel_project_local_path }}'
         update: yes
+
+    - name: Copy Laravel from local directory
+      command: cp -ra {{ laravel_project_local_path }} {{ laravel_project_path }}
+      become: yes
 
     - name: Install Laravel dependencies with Composer
       command: composer install
@@ -19,14 +37,14 @@
 
     - name: Copy environment file
       copy:
-        src: '{{ project_path }}/{{ env_file }}'
-        dest: '{{ project_path }}/{{ env_destination }}'
+        src: '{{ laravel_project_path }}/{{ env_file }}'
+        dest: '{{ laravel_project_path }}/{{ env_destination }}'
         remote_src: yes
 
     - name: Generate application key
       command: php artisan key:generate
       args:
-        chdir: '{{ project_path }}'
+        chdir: '{{ laravel_project_path }}'
 
     - name: Set correct permissions for storage and bootstrap/cache
       file:
@@ -35,8 +53,21 @@
         mode: '0775'
         recurse: yes
       loop:
-        - '{{ project_path }}/storage'
-        - '{{ project_path }}/bootstrap/cache'
+        - '{{ laravel_project_path }}/storage'
+        - '{{ laravel_project_path }}/bootstrap/cache'
+      become: yes
+
+    - name: Set correct permissions for public
+      file:
+        path: '{{ laravel_project_path }}/public'
+        state: directory
+        mode: '0777'
+        recurse: yes
+      become: yes
 
     - name: Ensure www-data is the owner of project files
-      command: chown -R www-data:www-data "{{ project_path }}"
+      command: chown -R {{server_user}}:www-data "{{ item }}"
+      loop:
+        - '{{ laravel_project_path }}/storage'
+        - '{{ laravel_project_path }}/bootstrap/cache'
+      become: yes

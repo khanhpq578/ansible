@@ -1,0 +1,16 @@
+{
+  "apps": [
+    {
+      "name": "next-app",
+      "script": "yarn",
+      "args": "start --port 3001",
+      "cwd": "/var/www/nextjs",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "instances": 1,
+      "exec_mode": "fork",
+      "watch": false
+    }
+  ]
+}
