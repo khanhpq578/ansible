@@ -5,14 +5,6 @@
   vars_files:
     - ../external_vars.yaml
   tasks:
-    # - name: Add PostgreSQL APT repository
-    #   shell: |
-    #     echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-
-    # - name: Add PostgreSQL repository key
-    #   become: no
-    #   shell: |
-    #     wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
     - name: Ensure curl and ca-certificates are installed
       apt:
         name:
@@ -63,6 +55,23 @@
         state: started
         enabled: yes
 
+    - name: Set password for postgres user
+      become: yes
+      become_method: sudo
+      become_user: '{{ postgresql_root_user }}'
+      postgresql_user:
+        db: postgres
+        name: '{{ postgresql_root_user }}'
+        password: '{{ postgresql_root_password }}'
+    - name: Ensure PostgreSQL pg_hba.conf has the correct authentication line
+      lineinfile:
+        path: '/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf'
+        regexp: '^local\s+all\s+postgres\s+'
+        line: 'local   all             postgres                                md5'
+        state: present
+      notify:
+        - Restart PostgreSQL
+
     - name: Create a new database
       postgresql_db:
         name: '{{ postgresql_db_name }}'
@@ -106,3 +115,8 @@
         login_port: '{{ postgresql_port }}'
         login_user: '{{ postgresql_root_user }}'
         login_password: '{{ postgresql_root_password }}'
+  handlers:
+    - name: Restart PostgreSQL
+      systemd:
+        name: postgresql
+        state: restarted
