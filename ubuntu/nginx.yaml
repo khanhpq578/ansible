@@ -12,7 +12,7 @@
         update_cache: yes
         upgrade: dist
 
-    # -------------------------------------------------------- #
+    # ---Install nginx---
     - name: Install Nginx
       apt:
         name: nginx
@@ -28,7 +28,7 @@
       lineinfile:
         path: '{{ nginx_conf_path }}'
         insertafter: '# Basic Settings'
-        line: '        client_max_body_size 1024M;'
+        line: '        client_max_body_size {{nginx_client_max_body_size}};'
         state: present
 
     - name: Add log format to Nginx configuration
@@ -54,8 +54,8 @@
         - 'gzip_comp_level 6'
         - 'gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript'
 
-    # -------------------------------------------------------- #
-    - name: Copy Next.js configuration to Nginx
+    # ---Copy site config nginx---
+    - name: Copy sites configuration to Nginx
       copy:
         src: '{{ item.src }}'
         dest: '/etc/nginx/sites-available/{{ item.dest }}'
@@ -78,7 +78,7 @@
         name: nginx
         state: restarted
 
-    # -------------------------------------------------------- #
+    # ---Install certbot---
     - name: Install Certbot
       apt:
         name:

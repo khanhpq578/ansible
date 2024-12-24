@@ -7,6 +7,19 @@ node_version: 'v18.20.4'
 # Php variables
 php_version: '8.1'
 php_root_folder: ''
+php_ini_configs:
+  - { key: 'upload_max_filesize', value: '32M' }
+  - { key: 'post_max_size', value: '48M' }
+  - { key: 'memory_limit', value: '256M' }
+  - { key: 'max_execution_time', value: '600' }
+  - { key: 'max_input_vars', value: '3000' }
+  - { key: 'max_input_time', value: '1000' }
+php_pool_configs:
+  - { key: 'pm.max_children', value: '5' }
+  - { key: 'pm.start_servers', value: '2' }
+  - { key: 'pm.min_spare_servers', value: '1' }
+  - { key: 'pm.max_spare_servers', value: '3' }
+  - { key: 'pm.max_requests', value: '500' }
 
 # Nginx variables
 nginx_conf_sites:
@@ -15,6 +28,7 @@ nginx_conf_sites:
   - { src: './configs/nginx/php.conf', dest: 'laravel.conf' }
   - { src: './configs/nginx/wordpress.conf', dest: 'wordpress.conf' }
   - { src: './configs/nginx/nodejs.conf', dest: 'nodejs.conf' }
+nginx_client_max_body_size: 200M
 
 # Mysql variables
 mysql_version: '8'
@@ -40,10 +54,10 @@ postgresql_admin_user: admin
 postgresql_admin_password: secret
 postgresql_db_name: test
 
-# swap
+# Config swap ram
 swap_ram_value: '8'
 
-# projects
+# Deploy laravel
 laravel_git_repo: ''
 laravel_project_name: 'laravel'
 laravel_project_local_path: '/home/{{server_user}}/{{laravel_project_name}}'
@@ -51,6 +65,7 @@ laravel_project_path: '/var/www/{{laravel_project_name}}'
 laravel_env_file: '.env.staging.example'
 laravel_env_destination: '.env'
 
+# Deploy nextjs
 nextjs_git_repo: ''
 nextjs_project_name: 'nextjs'
 nextjs_project_local_path: '/home/{{server_user}}/{{nextjs_project_name}}'
@@ -58,6 +73,7 @@ nextjs_project_path: '/var/www/{{nextjs_project_name}}'
 nextjs_env_file: '.env.staging.example'
 nextjs_env_destination: '.env'
 
+# Deploy reactjs
 reactjs_git_repo: ''
 reactjs_project_name: 'reactjs'
 reactjs_project_local_path: '/home/{{server_user}}/{{reactjs_project_name}}'
@@ -66,6 +82,7 @@ reactjs_build_dir: 'dist'
 reactjs_env_file: '.env.staging.example'
 reactjs_env_destination: '.env'
 
+# Deploy nodejs
 nodejs_git_repo: ''
 nodejs_project_name: 'nodejs'
 nodejs_project_local_path: '/home/{{server_user}}/{{nodejs_project_name}}'
@@ -74,6 +91,7 @@ nodejs_build_dir: 'dist'
 nodejs_env_file: '.env.staging.example'
 nodejs_env_destination: '.env'
 
+# Deploy wordpress
 wordpress_git_repo: ''
 wordpress_project_name: 'wordpress'
 wordpress_project_local_path: '/home/{{server_user}}/{{ wordpress_project_name }}'
@@ -85,8 +103,10 @@ wordpress_db_host: localhost
 wordpress_db_username: admin
 wordpress_db_password: secret
 
+# Deploy chatwoot
 chatwoot_project_name: chatwoot
 chatwoot_db_password: secret
+chatwoot_url: 'https://chatwoot.com'
 chatwoot_dir: '/home/{{server_user}}/{{chatwoot_project_name}}'
 chatwoot_env_url: 'https://raw.githubusercontent.com/chatwoot/chatwoot/develop/.env.example'
 chatwoot_docker_compose_url: 'https://raw.githubusercontent.com/chatwoot/chatwoot/develop/docker-compose.production.yaml'
