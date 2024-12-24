@@ -12,6 +12,8 @@
       apt:
         update_cache: yes
         upgrade: dist
+      tags:
+        - common
 
     - name: Install the required dependencies
       apt:
@@ -20,13 +22,19 @@
           - unzip
           - supervisor
         state: present
+      tags:
+        - common
 
     - name: Add the PHP repository
       shell: add-apt-repository ppa:ondrej/php -y
+      tags:
+        - common
 
     - name: Update the package index again
       apt:
         update_cache: yes
+      tags:
+        - common
 
     - name: Install php-fpm
       apt:
@@ -34,12 +42,16 @@
           - php{{ php_version }}-fpm
         state: present
         update_cache: yes
+      tags:
+        - common
 
     - name: Ensure php-fpm is started and enabled
       systemd:
         name: php{{ php_version }}-fpm
         state: started
         enabled: yes
+      tags:
+        - common
 
     - name: Install PHP extension
       apt:
@@ -64,6 +76,8 @@
         update_cache: yes
         install_recommends: no
         force: yes
+      tags:
+        - common
 
     - name: Ensure PHP settings are configured
       lineinfile:
@@ -77,6 +91,8 @@
         - { key: 'max_execution_time', value: '600' }
         - { key: 'max_input_vars', value: '3000' }
         - { key: 'max_input_time', value: '1000' }
+      tags:
+        - common
 
     # - name: Ensure PHP-FPM pool settings are configured in www.conf
     #   lineinfile:
@@ -94,12 +110,17 @@
       service:
         name: php{{ php_version }}-fpm
         state: restarted
+      tags:
+        - common
 
+    # ---Install composer from php---
     - name: Download Composer installer
       become: no
       get_url:
         url: https://getcomposer.org/installer
         dest: /tmp/composer-setup.php
+      tags:
+        - composer
 
     - name: Verify Composer installer
       become: no
@@ -108,6 +129,43 @@
         php -r "if (hash_file('sha384', '/tmp/composer-setup.php') === '${HASH}') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('/tmp/composer-setup.php'); } echo PHP_EOL;"
       register: verify_composer
       failed_when: "'Installer corrupt' in verify_composer.stdout"
+      tags:
+        - composer
 
     - name: Install Composer
       shell: php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      tags:
+        - composer
+
+    # ---Install supervisor and add config---
+    - name: Install the supervisor package
+      apt:
+        name:
+          - supervisor
+        state: present
+      tags:
+        - supervisor
+
+    - name: Ensure Supervisor is started and enabled
+      systemd:
+        name: supervisor
+        state: started
+        enabled: yes
+      tags:
+        - supervisor
+
+    - name: Copy Supervisor configuration
+      copy:
+        src: '{{ item.src }}'
+        dest: '{{ item.dest }}'
+      loop: '{{ supervisor_conf }}'
+      tags:
+        - supervisor
+
+  handlers:
+    - name: Reread and update Supervisor
+      command: supervisorctl reread && supervisorctl update
+      args:
+        chdir: '{{ supervisor_path }}'
+      tags:
+        - supervisor
