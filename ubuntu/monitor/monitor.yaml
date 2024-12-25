@@ -1,0 +1,82 @@
+---
+- name: Install Elastic APM Agent for PHP
+  hosts: all
+  become: yes
+  vars_files:
+    - ../../external_vars.yaml
+
+  tasks:
+    - name: Check if APM Agent package exists
+      ansible.builtin.stat:
+        path: '/home/{{server_user}}/apm-agent-php_1.10.0_all.deb'
+      register: apm_agent_exists
+      tags:
+        - apm
+
+    - name: End playbook if APM Agent package exists
+      ansible.builtin.meta: end_play
+      when: apm_agent_exists.stat.exists
+      tags:
+        - apm
+
+    - name: Download Elastic APM Agent for PHP
+      ansible.builtin.get_url:
+        url: 'https://github.com/elastic/apm-agent-php/releases/download/v1.10.0/apm-agent-php_1.10.0_all.deb'
+        dest: '/home/{{server_user}}/apm-agent-php_1.10.0_all.deb'
+      tags:
+        - apm
+
+    - name: Install Elastic APM Agent for PHP
+      ansible.builtin.apt:
+        deb: '/home/{{server_user}}/apm-agent-php_1.10.0_all.deb'
+      tags:
+        - apm
+
+    - name: Update cli/php.ini for Elastic APM configuration
+      ansible.builtin.blockinfile:
+        path: '/etc/php/{{php_version}}/cli/php.ini'
+        insertafter: '^\[PHP\]'
+        block: |
+          elastic_apm.server_url={{ monitor_server_server_url }}
+          elastic_apm.secret_token={{ monitor_server_secret_token }}
+          elastic_apm.service_name=ansible
+          elastic_apm.environment=develop
+        marker: '; ANSIBLE MANAGED BLOCK'
+      tags:
+        - apm
+
+    - name: Update fpm/php.ini for Elastic APM configuration
+      ansible.builtin.blockinfile:
+        path: '/etc/php/{{php_version}}/fpm/php.ini'
+        insertafter: '^\[PHP\]'
+        block: |
+          elastic_apm.server_url={{ monitor_server_server_url }}
+          elastic_apm.secret_token={{ monitor_server_secret_token }}
+          elastic_apm.service_name={{ monitor_server_name }}
+          elastic_apm.environment={{ monitor_server_environment }}
+        state: present
+        marker: '; ANSIBLE MANAGED BLOCK'
+      tags:
+        - apm
+
+    - name: Restart php-fpm service
+      ansible.builtin.service:
+        name: 'php{{ php_version }}-fpm'
+        state: restarted
+      ignore_errors: yes
+      tags:
+        - apm
+
+    - name: Change hostname server
+      ansible.builtin.hostname:
+        name: '{{ server_hostname }}'
+      tags:
+        - hostname
+
+    - name: Setup Elastic Agent
+      ansible.builtin.shell: '{{ monitor_fleet_enroll }}'
+      args:
+        creates: '/opt/Elastic/Agent' # Kiểm tra nếu Elastic Agent đã được cài đặt rồi thì không cài lại
+        chdir: '/home/{{ server_user }}'
+      tags:
+        - fleet
