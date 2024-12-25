@@ -1,5 +1,6 @@
 # Server user variables
 server_user: 'vagrant'
+server_hostname: 'local-server-ansible-20'
 
 # Nodejs variables
 node_version: 'v18.20.4'
@@ -112,8 +113,8 @@ chatwoot_env_url: 'https://raw.githubusercontent.com/chatwoot/chatwoot/develop/.
 chatwoot_docker_compose_url: 'https://raw.githubusercontent.com/chatwoot/chatwoot/develop/docker-compose.production.yaml'
 
 # ssh user
-ssh_username: khanhpq
-ssh_password: secret
+ssh_username: 
+ssh_password: 
 ssh_public_key: 
 ssh_port: 2212
 
@@ -121,3 +122,15 @@ ssh_port: 2212
 supervisor_conf:
   - { src: './configs/supervisor/queue.conf', dest: '/etc/supervisor/conf.d/queue.conf' }
 supervisor_path: '/etc/supervisor'
+
+# monitor
+monitor_server_name: 
+monitor_server_environment: 
+monitor_server_secret_token: 
+monitor_server_server_url: 
+
+monitor_fleet_enroll: |
+  curl -L -O https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-8.6.2-linux-x86_64.tar.gz
+  tar xzvf elastic-agent-8.6.2-linux-x86_64.tar.gz
+  cd elastic-agent-8.6.2-linux-x86_64
+  echo "Y" | sudo ./elastic-agent install --url=https://5d88f8869cf241e9970f2af40cc7e02c.fleet.ap-southeast-1.aws.found.io:443 --enrollment-token=
