@@ -1,8 +1,8 @@
 ---
 - name: Tạo người dùng với quyền sudo và cấu hình SSH
-  hosts: servers
+  hosts: all
   become: yes
-  vars:
+  vars_files:
     - ../../external_vars.yaml
 
   tasks:
@@ -14,7 +14,7 @@
     - name: Tạo người dùng nếu chưa tồn tại
       user:
         name: '{{ ssh_username }}'
-        password: "{{ ssh_password | password_hash('sha512') }}"
+        password: '{{ ssh_password }}'
         shell: /bin/bash
         groups: sudo
         append: yes
@@ -26,12 +26,12 @@
         state: directory
         owner: '{{ ssh_username }}'
         group: '{{ ssh_username }}'
-        mode: '0600'
+        mode: '0700'
 
     - name: Đặt khóa công khai SSH
       copy:
         dest: '/home/{{ ssh_username }}/.ssh/authorized_keys'
-        content: '{{ public_key }}'
+        content: '{{ ssh_public_key }}'
         owner: '{{ ssh_username }}'
         group: '{{ ssh_username }}'
         mode: '0600'
@@ -54,7 +54,12 @@
         regexp: '^#?Port '
         line: 'Port {{ ssh_port }}'
 
-    - name: Khởi động lại dịch vụ SSH
+    - name: Khởi động lại dịch vụ SSHD
       service:
         name: sshd
+        state: restarted
+
+    - name: Khởi động lại dịch vụ SSH
+      service:
+        name: ssh
         state: restarted
